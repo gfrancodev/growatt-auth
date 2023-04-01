@@ -19,7 +19,6 @@ model Auth {
   emailVerify        Boolean   @default(false)
   username           String    @unique
   roles              String[]  @default([])
-  codeId             String    @db.ObjectId
   password           String
   passwordResetToken String?
   passowrdExpires    String?
@@ -31,16 +30,25 @@ model Auth {
 
 enum Gender {
   M
-  F 
+  F
   O
 }
 
 model Code {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String    @db.ObjectId
+  user_id    String    @db.ObjectId
   code      String
   type      String
-  status    Boolean   @default(true)
+  status    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Token {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  user_id    String    @db.ObjectId
+  value     String
+  status    Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
@@ -53,7 +61,27 @@ enum CodeType {
 
 model Roles {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  user_id    String    @db.ObjectId
   name      String
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+}
+
+model Profile {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  user_id    String    @db.ObjectId
+  photo      String?   
+  age        Int?      @default(0)
+  bio        String?
+  experience String?
+  occupation String?
+  charge     String?
+  course     String?
+  institute  String?
+  graduation String?
+  bussiness  String?
+  linkedin   String?
+  twitter    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
 }

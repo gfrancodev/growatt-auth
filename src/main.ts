@@ -20,6 +20,7 @@ async function bootstrap() {
     .setTitle('Autenticação Growatt Academy')
     .setDescription('API de autenticação Growatt Academy')
     .setVersion('2.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/doc', app, document);
@@ -34,7 +35,7 @@ async function bootstrap() {
   );
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
-  await app.listen(3000);
+  await app.listen(3002);
 
   async function gracefulShutdown(signal: NodeJS.Signals) {
     await app.close();

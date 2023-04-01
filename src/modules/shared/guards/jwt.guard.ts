@@ -1,19 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  ForbiddenException,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class JwtGuard extends AuthGuard('jwt') {
-    canActivate(context: ExecutionContext){
-        return super.canActivate(context)
-    }
+  protected logger = new Logger(JwtGuard.name)
 
-    handleRequest<TUser = any>(_err: any, user: any, _info: any, _context: ExecutionContext, _status?: any): TUser {
-        const { email, password } = user 
-
-        if (email === 'ti@solution4fleet.com.br' && password === 'S4F@b4f5c1473#SFAPI')
-            return user
-        else 
-            throw new ForbiddenException('Usuário não tem autorização para utilizar este serviço.')
+  constructor(private reflector: Reflector) {
+    super();
+  }
+  canActivate(context: ExecutionContext) {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
     }
+    return super.canActivate(context);
+  }
+
+  handleRequest(err, user, info) {
+    console.log(err)
+    this.logger.log("[HANDLE_REQUEST]", user)
+    return user;
+  }
 }

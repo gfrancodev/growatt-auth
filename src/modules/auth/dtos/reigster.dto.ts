@@ -1,24 +1,39 @@
-import { IsBoolean, IsString } from "class-validator"
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class RegisterDTO {
-    @IsString()
-    fullname: string
-    
-    @IsString()
-    email: string
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  fullname: string;
 
-    @IsString()
-    username: string 
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  email: string;
 
-    @IsString()
-    cellphone: string
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  username: string;
 
-    @IsString()
-    gender: string
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  cellphone: string;
 
-    @IsString()
-    password: string 
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  gender: string;
 
-    @IsBoolean()
-    terms: boolean
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  terms: boolean;
 }
