@@ -39,6 +39,7 @@ async function bootstrap() {
 
   async function gracefulShutdown(signal: NodeJS.Signals) {
     await app.close();
+    await db.$disconnect();
     process.kill(process.pid, signal);
   }
 
