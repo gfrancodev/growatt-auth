@@ -6,16 +6,23 @@ import {
   UploadedFiles,
   ParseFilePipe,
   FileTypeValidator,
+  UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ImageService } from '../services/image.service';
 import { ApiTags, ApiConsumes } from '@nestjs/swagger';
+import { Roles } from 'src/modules/shared/decorators/roles.decorator';
+import { JwtGuard } from 'src/modules/shared/guards/jwt.guard';
+import { RolesGuard } from 'src/modules/shared/guards/roles.guard';
+import { Role } from 'src/modules/shared/enums/role.enum';
 
 @ApiTags('Upload')
 @Controller('v1/upload')
 export class UploadController {
   constructor(private readonly imageService: ImageService) {}
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Post('image')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FilesInterceptor('file'))
@@ -27,7 +34,6 @@ export class UploadController {
       ]
     })) files: Express.Multer.File[],
   ): Promise<any> {
-    console.log(req, files)
     return await this.imageService.execute(files)
   }
 }

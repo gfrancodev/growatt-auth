@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAuth } from 'src/modules/shared/interfaces/iauth';
 import { ICode } from 'src/modules/shared/interfaces/icode';
 import { RequestResetPasswordDTO } from '../dtos/request-reset-password';
@@ -12,6 +12,7 @@ const { MAIL_NAME } = process.env;
 
 @Injectable()
 export class RequestResetPasswordService {
+  protected logger = new Logger(RequestResetPasswordService.name)
   constructor(
     @Inject('Auth')
     private readonly auth: IAuth,
@@ -25,8 +26,10 @@ export class RequestResetPasswordService {
 
   async execute({ email }: RequestResetPasswordDTO) {
     const user = await this.auth.findByEmail(email);
+    this.logger.debug("[USER]", user)
 
     const sixCode = this.generateCode.six();
+    this.logger.debug("[SIXCODE]", sixCode)
 
     await this.code.createCode({
       id: user.id,

@@ -24,7 +24,7 @@ export class CodeRepository implements IPrisma, ICode {
   }
 
   async createCode(data: Code.Data): Promise<Code.Response> {
-    return (await this.create(data)) as any;
+    return await this.create(data) as any;
   }
 
   async findOneCodeByUserId(

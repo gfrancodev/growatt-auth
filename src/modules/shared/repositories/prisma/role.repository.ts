@@ -10,8 +10,8 @@ export class RoleRepository implements IPrisma, IRoles {
   async createRole(data) {
     return await this.create(data);
   }
-
-  async findOneRoleById(user_id: string) {
+  
+  async findAllRolesByUserId(user_id: string) {
     return await this.findAll({ where: { user_id }}) as any;
   }
 
@@ -48,7 +48,7 @@ export class RoleRepository implements IPrisma, IRoles {
     });
   }
 
-  async findAllRolesByUserId(user_id): Promise<Role.Response> {
+  async findOneRoleById(user_id): Promise<Role.Response> {
     return (await this.findAll({ where: { userId: user_id } }))[0] as any;
   }
 

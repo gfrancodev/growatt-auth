@@ -37,11 +37,18 @@ export class LoginService {
     }
 
     const { id, fullname } = user;
+    this.logger.log('[ID]', id);
 
     const permission = await this.role.findAllRolesByUserId(id)
 
+    const roles = await Promise.all(permission.flatMap(async({ name }) => {
+      return name
+    }))
+
+    this.logger.log('[ROLES]', roles);
+
     const access_token = this.jwt.sign(
-      { id, fullname, email, username, role: permission },
+      { id, fullname, email, username, roles },
       { secret: process.env.JWT_SECRET_KEY },
     );
 

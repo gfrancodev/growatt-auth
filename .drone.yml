@@ -1,0 +1,120 @@
+kind: pipeline
+type: kubernetes
+name: anygrid
+
+steps:
+- name: build 
+  image: docker:18.06-dind
+  privileged: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: 
+      from_secret: AWS_SECRET_ACCESS_KEY
+    AWS_DEFAULT_REGION:
+      from_secret: AWS_DEFAULT_REGION 
+    AWS_ACCOUNT_ID: 
+      from_secret: AWS_ACCOUNT_ID
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: vfs
+    USER: docker 
+  commands:
+    - addgroup -S $USER && adduser -S $USER -G $USER
+    - chown -R $USER:$USER /home/$USER/
+    - dockerd --iptables=false --dns 8.8.8.8 --dns 8.8.4.4 &> /dev/null &
+    - apk add --update --no-cache python3 py3-pip iptables docker openrc
+    - pip3 install --no-cache-dir awscli
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set default.region $AWS_DEFAULT_REGION
+    - aws ecr create-repository --repository-name ${DRONE_REPO_NAME} &> /dev/null &
+    - docker login -u AWS -p $(aws ecr get-login-password --region $AWS_DEFAULT_REGION) $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+    - rc-update add docker boot
+    - chown docker /var/run/docker.sock
+    - docker build --network=host -f Dockerfile -t ${DRONE_REPO_NAME}:${DRONE_COMMIT_SHA:0:8} .
+    - docker tag ${DRONE_REPO_NAME}:${DRONE_COMMIT_SHA:0:8} $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/${DRONE_REPO_NAME}:${DRONE_COMMIT_SHA:0:8}
+    - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/${DRONE_REPO_NAME}:${DRONE_COMMIT_SHA:0:8}
+  depends_on:
+    - testing
+
+- name: deploy
+  image: dtzar/helm-kubectl
+  privileged: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: 
+      from_secret: AWS_SECRET_ACCESS_KEY
+    AWS_DEFAULT_REGION:
+      from_secret: AWS_DEFAULT_REGION 
+    AWS_ACCOUNT_ID: 
+      from_secret: AWS_ACCOUNT_ID
+    NAMESPACE:
+      from_secret: NAMESPACE
+    KUBE_NAME: 
+      from_secret: KUBE_NAME
+    APP_PORT:
+      from_secret: APP_PORT
+    SERVICE_PORT: 
+      from_secret: SERVICE_PORT
+    GRPC_PORT: 
+      from_secret: GRPC_PORT
+    NAMESPACE_PRD:
+      from_secret: NAMESPACE_PRD
+    NAMESPACE_HMG:
+      from_secret: NAMESPACE_HMG   
+    ENVIROMENTS: 
+      from_secret: ENVIROMENTS
+    KUBE_REPLICA_COUNT:
+      from_secret: KUBE_REPLICA_COUNT
+  commands:
+    - apk add --no-cache python3 py3-pip
+    - pip3 install --no-cache-dir awscli
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set default.region $AWS_DEFAULT_REGION
+    - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $KUBE_NAME
+    - |
+      cat <<EOF >>./helm/values.yaml
+      name: $DRONE_REPO_NAME
+
+      image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/${DRONE_REPO_NAME}:${DRONE_COMMIT_SHA:0:8}
+      appPort: $APP_PORT
+      srvPort: $SERVICE_PORT
+
+      deployment:
+        replicaCount: $KUBE_REPLICA_COUNT
+
+      configMap:
+        name: $ENVIROMENTS
+      EOF
+    - echo $NAMESPACE
+    - if [ "$DRONE_BRANCH" == "main" ]; then export NAMESPACE="$NAMESPACE_PRD"; else export NAMESPACE="$NAMESPACE_HMG"; fi
+    - helm upgrade $DRONE_REPO_NAME ./helm --install --values=./helm/values.yaml --namespace $NAMESPACE
+  depends_on:
+    - build
+
+- name: discord notification
+  image: appleboy/drone-discord
+  settings:
+    webhook_id: 
+      from_secret: DISCORD_ID
+    webhook_token: 
+      from_secret: DISCORD_TOKEN
+    avatar_url: https://i.imgur.com/HoYKEWE.png
+    message: "✅ ${DRONE_BUILD_STATUS} | ${DRONE_BRANCH} - ${DRONE_REPO_NAMESPACE} → ${DRONE_REPO_NAME}:${DRONE_COMMIT_SHA:0:8} https://gitlab.com/${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME}/-/commit/${DRONE_COMMIT_SHA}"
+  when:
+    branch:
+      - main
+      - develop
+      - ci
+    event:
+      - push
+      - pull_request
+  depends_on:
+    - deploy
+
+
+
+
+

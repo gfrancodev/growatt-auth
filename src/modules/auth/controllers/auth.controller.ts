@@ -77,6 +77,7 @@ export class AuthController {
     return await this.requestResetEmailService.execute(body);
   }
 
+
   @Public()
   @HttpCode(200)
   @Post('request/reset/password')
@@ -84,14 +85,12 @@ export class AuthController {
     return await this.requestResetPasswordService.execute(body);
   }
 
-  @Public()
   @HttpCode(200)
   @Post('reset/password')
   async resetPassword(@Body() body: ResetPasswordDTO) {
     return await this.resetPasswordService.execute(body);
   }
 
-  @Public()
   @HttpCode(200)
   @Post('reset/email')
   async resetEmail(@Body() body: ResetEmailDTO) {

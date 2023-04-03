@@ -23,8 +23,7 @@ export class FindOneService {
     delete user.createdAt;
     delete user.updatedAt;
 
-    user.roles = await this.role.findAllRolesByUserId(user_id)
-    console.log(user.roles)
+    user.roles = await Promise.all((await this.role.findAllRolesByUserId(user_id)).flatMap(async({ name })  => { return name}))
 
     const profile = await this.profile.findOneProfile(user.id);
 

@@ -8,6 +8,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { RoleModule } from './modules/role/role.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { RolesGuard } from './modules/shared/guards/roles.guard';
+import { JwtGuard } from './modules/shared/guards/jwt.guard';
 
 @Module({
   imports: [SharedModule, AuthModule, ProfileModule, RoleModule, UploadModule],
@@ -17,6 +18,10 @@ import { RolesGuard } from './modules/shared/guards/roles.guard';
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtGuard,
     },
     {
       provide: APP_GUARD,
