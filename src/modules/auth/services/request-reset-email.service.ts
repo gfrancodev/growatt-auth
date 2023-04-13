@@ -32,16 +32,22 @@ export class RequestResetEmailService {
     const sixCode = this.generateCode.six();
 
     this.logger.debug("[CODE]", sixCode)
-
+  
+    this.logger.debug("[CODE_PAYLOAD]", {
+      user_id: user.id,
+      type: 'email_reset',
+      code: sixCode,
+    })
+    
     await this.code.createCode({
-      id: user.id,
+      user_id: user.id,
       type: 'email_reset',
       code: sixCode,
     });
 
     this.mail.send({
       to: process.env.MAIL_TO,
-      from: user.email,
+      from: email,
       subject: `🧑‍🎓 ${MAIL_NAME}- Seu código de confirmação é ${sixCode}`,
       //template: resolve('shared/templates') + '/code-confirm-email',
       html: `<h1>Seu código é ${sixCode}!</h1>`,

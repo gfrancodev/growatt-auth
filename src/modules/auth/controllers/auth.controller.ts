@@ -16,9 +16,12 @@ import { ResetEmailDTO } from '../dtos/reset-email.dto';
 import { RequestResetEmailService } from '../services/request-reset-email.service';
 import { RequestResetPasswordDTO } from '../dtos/request-reset-password';
 import { RequesResetEmailDTO } from '../dtos/request-reset-email.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/modules/shared/guards/jwt.guard';
 import { Public } from 'src/modules/shared/decorators/public.decorator';
+import { RequestConfirmEmailService } from '../services/request-confirm-email.service';
+import { RolesGuard } from 'src/modules/shared/guards/roles.guard';
+import { ConfirmResetPasswordService } from '../services/confirm-reset-password.service';
 
 @ApiTags('Autenticação')
 @Controller('v1/auth')
@@ -28,10 +31,11 @@ export class AuthController {
     private readonly registerService: RegisterService,
     private readonly confirmEmailService: ConfirmEmailService,
     private readonly confirmResetEmailService: ConfirmResetEmailService,
-    private readonly confirmResetPasswordService: ConfirmResetEmailService,
+    private readonly confirmResetPasswordService: ConfirmResetPasswordService,
     private readonly resetEmailService: ResetEmailService,
     private readonly resetPasswordService: ResetPasswordService,
     private readonly requestResetEmailService: RequestResetEmailService,
+    private readonly requestConfirmEmailService: RequestConfirmEmailService,
     private readonly requestResetPasswordService: RequestResetPasswordService,
   ) {}
 
@@ -70,6 +74,15 @@ export class AuthController {
     return await this.confirmResetPasswordService.execute(body);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
+  @HttpCode(200)
+  @Post('request/confirm/email')
+  async requestConfirmEmail(@Request() req) {
+    return await this.requestConfirmEmailService.execute(req.user.id);
+  }
+
+
   @Public()
   @HttpCode(200)
   @Post('request/reset/email')
@@ -85,12 +98,14 @@ export class AuthController {
     return await this.requestResetPasswordService.execute(body);
   }
 
+  @Public()
   @HttpCode(200)
   @Post('reset/password')
   async resetPassword(@Body() body: ResetPasswordDTO) {
     return await this.resetPasswordService.execute(body);
   }
 
+  @Public()
   @HttpCode(200)
   @Post('reset/email')
   async resetEmail(@Body() body: ResetEmailDTO) {

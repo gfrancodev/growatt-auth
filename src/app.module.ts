@@ -9,9 +9,10 @@ import { RoleModule } from './modules/role/role.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { RolesGuard } from './modules/shared/guards/roles.guard';
 import { JwtGuard } from './modules/shared/guards/jwt.guard';
+import { GalleryModule } from './modules/gallery/gallery.module';
 
 @Module({
-  imports: [SharedModule, AuthModule, ProfileModule, RoleModule, UploadModule],
+  imports: [SharedModule, AuthModule, ProfileModule, RoleModule, UploadModule, GalleryModule],
   controllers: [AppController],
   providers: [
     AppService,

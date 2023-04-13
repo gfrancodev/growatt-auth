@@ -32,7 +32,7 @@ export class RequestResetPasswordService {
     this.logger.debug("[SIXCODE]", sixCode)
 
     await this.code.createCode({
-      id: user.id,
+      user_id: user.id,
       type: 'password_reset',
       code: sixCode,
     });

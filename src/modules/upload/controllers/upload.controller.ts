@@ -25,7 +25,7 @@ export class UploadController {
   @Roles(Role.Admin)
   @Post('image')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FilesInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files'))
   async uploadImage(
     @Request() req,
     @UploadedFiles( new ParseFilePipe({
@@ -34,6 +34,6 @@ export class UploadController {
       ]
     })) files: Express.Multer.File[],
   ): Promise<any> {
-    return await this.imageService.execute(files)
+    return await this.imageService.execute(req.user.id, files)
   }
 }

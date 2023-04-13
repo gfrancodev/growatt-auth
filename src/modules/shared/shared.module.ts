@@ -16,6 +16,7 @@ import { join } from 'path';
 import { TokenRepository } from './repositories/prisma/token.repository';
 import { ProfileRepository } from './repositories/prisma/profile.repository';
 import { AWSS3Provider } from './providers/upload/aws-s3.provider';
+import { GalleryRepository } from './repositories/prisma/gallery.repository';
 
 config();
 
@@ -94,6 +95,10 @@ const { MAIL_NAME, MAIL_TO, MAIL_HOST, MAIL_USER, MAIL_PASS, MAIL_PORT } =
       provide: 'Profile',
       useClass: ProfileRepository,
     },
+    {
+      provide: 'Gallery',
+      useClass: GalleryRepository
+    }
   ],
   exports: [
     JwtService,
@@ -135,6 +140,10 @@ const { MAIL_NAME, MAIL_TO, MAIL_HOST, MAIL_USER, MAIL_PASS, MAIL_PORT } =
       provide: 'Profile',
       useClass: ProfileRepository,
     },
+    {
+      provide: 'Gallery',
+      useClass: GalleryRepository
+    }
   ],
 })
 export class SharedModule {}

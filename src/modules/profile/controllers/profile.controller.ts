@@ -47,8 +47,15 @@ export class ProfileController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.Admin)
   @Get()
-  async findAll(@Request() req, @Query('page') page: FindAllProfileDTO) {
-    return await this.findAllService.execute(Number(page));
+  async findAll(@Request() req, @Query('page') page: FindAllProfileDTO,  @Query('filter') filter?: string) {
+    return await this.findAllService.execute(Number(page), filter);
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Get('/me')
+  async findProfile(@Request() req: any) {
+    return await this.findOneService.execute({ user_id: req.user.id });
   }
 
   @UseGuards(JwtGuard, RolesGuard)

@@ -2,6 +2,7 @@ import { IAuth } from '../../interfaces/iauth';
 import { IPrisma } from '../../interfaces/iprisma';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaHelper } from '../../helpers/prisma.helper';
+import { equal } from 'assert';
 
 @Injectable()
 export class AuthRepository implements IPrisma, IAuth {
@@ -50,8 +51,30 @@ export class AuthRepository implements IPrisma, IAuth {
     )[0] as any;
   }
 
-  async findAllAuth(page) {
-    return await this.findAll({ skip: 0 });
+  async findAllAuth(page, filter) {
+    return await this.findAll({ skip: page, take: 8,  where: {
+      OR: [
+        {
+          email: {
+            contains: filter
+          },
+        },
+        {
+          username: {
+            contains: filter
+          }, 
+        },
+        {
+          fullname: {
+            contains: filter 
+          },
+        },
+        {
+          cellphone: {
+            contains: filter
+          }
+        }],
+      }})
   }
 
   async findOne(id: string): Promise<unknown> {
@@ -76,6 +99,7 @@ export class AuthRepository implements IPrisma, IAuth {
     try {
       return await this.prisma.auth.findMany(params);
     } catch (error) {
+      console.log(error)
       return [];
     }
   }

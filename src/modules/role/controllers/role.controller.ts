@@ -34,7 +34,13 @@ export class RoleController {
   ) {}
 
   @UseGuards(JwtGuard)
-  //@Roles(Role.Admin)
+  @Get('all')
+  async all() {
+    return Object.values(Role)
+  }
+
+  @UseGuards(JwtGuard)
+  @Roles(Role.Admin)
   @Post()
   async create(@Body() body: CreateRoleDTO) {
     return await this.createService.execute(body);

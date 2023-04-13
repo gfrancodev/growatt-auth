@@ -16,7 +16,7 @@ export class TokenRepository implements IPrisma, IToken {
       await this.findAll({
         where: {
           user_id,
-          token,
+          value: token,
           status: false,
         },
       })

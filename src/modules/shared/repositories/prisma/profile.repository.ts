@@ -16,7 +16,11 @@ export class ProfileRepository implements IPrisma, IProfile {
   }
 
   async findAllProfile(page) {
-    return await this.findAll({ skip: 20, take: page });
+    return await this.findAll({ skip: 8, take: page });
+  }
+
+  async countProfiles() {
+    return (await this.findAll()).length
   }
 
   async findOneProfile(user_id: string) {

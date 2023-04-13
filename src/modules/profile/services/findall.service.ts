@@ -11,9 +11,10 @@ export class FindAllService {
     private readonly auth: IAuth,
   ) {}
 
-  async execute(page) {
-    const user = await this.auth.findAllAuth(page ?? 1) as any;
-    console.log(user)
+  async execute(page, filter) {
+    const count = await this.profile.countProfiles()
+    const user = await this.auth.findAllAuth(page ?? 1, filter) as any;
+
     const data = await Promise.all(
       user.flatMap(async (item) => {
         delete item.password;
@@ -25,7 +26,6 @@ export class FindAllService {
         const profile = await this.profile.findOneProfile(item.user_id);
 
         delete profile.id;
-        delete profile.createdAt;
         delete profile.updatedAt;
         return {
           ...item,
@@ -33,6 +33,6 @@ export class FindAllService {
         };
       }),
     );
-    return { total: user.length, data };
+    return { total: count, pages: parseInt(String(Number(count / 8))), total_page: user.length, data };
   }
 }

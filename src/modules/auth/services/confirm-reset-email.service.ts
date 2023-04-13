@@ -23,11 +23,11 @@ export class ConfirmResetEmailService {
     if (!user) {
       throw new ForbiddenException('E-mail not exists');
     }
-    const verifyCode = await this.code.findOneCodeByUserId(user.id, code);
+    const verifyCode = await this.code.findOneCodeByUserId(user.id, "email_reset", code);
 
     if (!verifyCode) throw new ForbiddenException('Code not is valid');
 
-    await this.code.updateStatusCode(user.id, code, true);
+    await this.code.updateStatusCode(user.id, "email_reset", code, true);
 
     const opactoken = this.generateCode.opac();
 

@@ -9,14 +9,16 @@ export class CodeRepository implements IPrisma, ICode {
 
   async updateStatusCode(
     user_id: string,
+    type: string,
     code: string,
     status: boolean,
   ): Promise<Code.Response> {
-    return (await this.update({
+    return (await this.updateMany({
       where: {
-        id: user_id,
+        user_id: user_id,
       },
       data: {
+        type,
         code,
         status,
       },
@@ -24,16 +26,15 @@ export class CodeRepository implements IPrisma, ICode {
   }
 
   async createCode(data: Code.Data): Promise<Code.Response> {
-    return await this.create(data) as any;
+   return await this.create(data) as any;
   }
 
   async findOneCodeByUserId(
     user_id: string,
+    type: string,
     code: string,
   ): Promise<Code.Response> {
-    return (
-      await this.findAll({ where: { userId: user_id, code, status: false } })
-    )[0] as any;
+    return (await this.findAll({ where: { user_id, code, type, status: false } }))[0] as any;
   }
 
   async findOne(id: string): Promise<unknown> {
@@ -63,9 +64,11 @@ export class CodeRepository implements IPrisma, ICode {
   }
 
   async create(data: Code.Data): Promise<unknown> {
+    console.log(data)
     try {
       return await this.prisma.code.create({ data });
     } catch (error) {
+      console.log(error)
       throw new InternalServerErrorException(error);
     }
   }

@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { IAuth } from 'src/modules/shared/interfaces/iauth';
 import { ICode } from 'src/modules/shared/interfaces/icode';
 import { ConfirmEmailDTO } from '../dtos/confirm-email.dto';
@@ -7,6 +7,7 @@ import { IGenerateCode } from 'src/modules/shared/interfaces/igenerate-code';
 
 @Injectable()
 export class ConfirmEmailService {
+  protected logger = new Logger(ConfirmEmailService.name)
   constructor(
     @Inject('Auth')
     private readonly auth: IAuth,
@@ -20,19 +21,26 @@ export class ConfirmEmailService {
 
   async execute({ email, code }: ConfirmEmailDTO) {
     const user = await this.auth.findByEmail(email);
+    this.logger.debug("[USER]", user)
+
     if (!user) {
+      this.logger.error("[USER_NOT_EXISTS]", user)
       throw new ForbiddenException('E-mail not exists');
     }
-    const verifyCode = await this.code.findOneCodeByUserId(user.id, code);
 
-    if (!verifyCode) throw new ForbiddenException('Code not is valid');
+    const verifyCode = await this.code.findOneCodeByUserId(user.id, "email_verify", code);
+    this.logger.debug("[VERIFY_CODE]", verifyCode)
 
-    await this.code.updateStatusCode(user.id, code, true);
+    if (!verifyCode) {
+      this.logger.error("[CODE_NVALID]", verifyCode)
+      throw new ForbiddenException('Code not is valid');
+    }
 
-    const opactoken = this.generateCode.opac();
+    await this.code.updateStatusCode(user.id, "email_verify", code, true);
+    this.logger.debug("[UPDATE_CODE]", verifyCode)
 
-    await this.token.createToken({ id: user.id, value: opactoken });
+    await this.auth.updateAuth(user.id, { emailVerify: true })
 
-    return { token: opactoken };
+    return { msg: "Verified e-mail" };
   }
 }
