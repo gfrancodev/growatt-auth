@@ -4,7 +4,7 @@ name: anygrid
 
 steps:
 - name: build 
-  image: docker:18.06-dind
+  image: docker
   privileged: true
   environment:
     AWS_ACCESS_KEY_ID:
