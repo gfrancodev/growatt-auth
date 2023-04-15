@@ -60,22 +60,22 @@ export class ProfileController {
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.Admin)
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
+  @Get(':user_id')
+  async findOne(@Param('user_id') id: string) {
     return await this.findOneService.execute({ user_id: id });
   }
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.Admin)
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() body: UpdateProfileDTO) {
+  @Put(':user_id')
+  async update(@Param('user_id') id: string, @Body() body: UpdateProfileDTO) {
     return await this.updateService.execute({ user_id: id, ...body });
   }
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.Admin)
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
+  @Delete(':user_id')
+  async delete(@Param('user_id') id: string) {
     return await this.deleteService.execute({ user_id: id });
   }
 }
